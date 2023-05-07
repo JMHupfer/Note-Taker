@@ -2,9 +2,12 @@ const express = require('express');
 const path = require('path');
 const notesData = require('./db/db.json');
 const uuid = require('uuid');
+const fs = require("fs");
 
 const app = express();
 const PORT = 3001;
+
+app.use(express.urlencoded({ extended: true }));
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -14,14 +17,6 @@ app.get('/notes', (req, res) =>
 );
 
 app.get('/api/notes', (req, res) => res.json(notesData));
-
-// app.post('/api/notes', (req, res) => {
-//     res.json(`${req.method} request received`);
-
-//     console.info(req.rawHeaders);
-
-//     console.info(`${req.method} request received`);
-// });
 
 app.post('/api/notes', (req, res) => {
     console.info(`${req.method} request received to add a note`);
@@ -37,13 +32,30 @@ app.post('/api/notes', (req, res) => {
             note_id: uuid(),
         };
 
-        const response = {
-            status: 'success',
-            body: newNote,
-        };
+        fs.readFile('./db/db.json', 'utf-8', (err, data) => {
+            if (err) {
+                console.log(err);
+            } else {
+                const parsedNotes = JSON.parse(data);
+                parsedNotes.push(newNote);
 
-        console.log(response);
-        res.status(201).json(response);
+                fs.writeFile(`./db/db.json`, JSON.stringify(parsedNotes), (err) => {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        console.log(
+                            `Note with title "${newNote.noteTitle}" has been written to JSON file`
+                        );
+                        const response = {
+                            status: 'success',
+                            body: newNote,
+                        };
+                        console.log(response);
+                        res.status(201).json(response);
+                    }
+                });
+            }
+        });
     } else {
         res.status(500).json('Error in posting note');
     }
