@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const notesData = require('./db/db.json');
-const uuid = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const fs = require("fs");
 
 const app = express();
@@ -21,15 +21,15 @@ app.get('/api/notes', (req, res) => res.json(notesData));
 app.post('/api/notes', (req, res) => {
     console.info(`${req.method} request received to add a note`);
 
-    const { noteTitle, noteText } = req.body;
+    const { title, text } = req.body;
 
 
-    if (noteTitle && noteText) {
+    if (title && text) {
 
         const newNote = {
-            noteTitle,
-            noteText,
-            note_id: uuid(),
+            title,
+            text,
+            note_id: uuidv4(),
         };
 
         fs.readFile('./db/db.json', 'utf-8', (err, data) => {
