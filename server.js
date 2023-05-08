@@ -16,7 +16,15 @@ app.get('/notes', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 );
 
-app.get('/api/notes', (req, res) => res.json(notesData));
+app.get('/api/notes', (req, res) => {
+    fs.readFile('./db/db.json', 'utf-8', (err, data) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json('Error reading notes');
+        }
+        res.json(JSON.parse(data));
+    });
+});
 
 app.post('/api/notes', (req, res) => {
     console.info(`${req.method} request received to add a note`);
@@ -29,7 +37,7 @@ app.post('/api/notes', (req, res) => {
         const newNote = {
             title,
             text,
-            note_id: uuidv4(),
+            id: uuidv4(),
         };
 
         fs.readFile('./db/db.json', 'utf-8', (err, data) => {
@@ -44,10 +52,10 @@ app.post('/api/notes', (req, res) => {
                         console.error(err);
                     } else {
                         console.log(
-                            `Note with title "${newNote.noteTitle}" has been written to JSON file`
+                            `Note with title "${newNote.title}" has been written to JSON file`
                         );
                         const response = {
-                            status: 'success',
+                            status: 'It works!',
                             body: newNote,
                         };
                         console.log(response);
@@ -59,6 +67,30 @@ app.post('/api/notes', (req, res) => {
     } else {
         res.status(500).json('Error in posting note');
     }
+});
+
+app.delete('/api/notes/:id', (req, res) => {
+    const noteId = req.params.id;
+
+    fs.readFile('./db/db.json', 'utf-8', (err, data) => {
+        if (err) {
+            console.log(err);
+            return res.status(500).json('Error reading notes');
+        }
+
+        const parsedNotes = JSON.parse(data);
+        const updatedNotes = parsedNotes.filter((note) => note.id !== noteId);
+
+        fs.writeFile('./db/db.json', JSON.stringify(updatedNotes), (err) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).json('Error writing notes');
+            }
+
+            console.log(`Note with ID ${noteId} has been deleted`);
+            res.status(200).json({ status: 'success', note_id: noteId });
+        });
+    });
 });
 
 app.get('*', (req, res) =>
