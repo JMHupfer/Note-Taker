@@ -1,11 +1,16 @@
+//the require code is importing all the modules listed after require
 const express = require('express');
 const path = require('path');
 const notesData = require('./db/db.json');
 const { v4: uuidv4 } = require('uuid');
 const fs = require("fs");
 
+//used to create an express instance, important for later code to app.set, app.use, app.get and app.post, app.delete, etc. 
 const app = express();
-const PORT = 3001;
+// const PORT = 3001;
+
+//using this code instead of const PORT to see if it will help launch heroku (env = enviroment)/specific for heroku
+app.set('port', process.env.PORT || 3001);
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -87,7 +92,7 @@ app.delete('/api/notes/:id', (req, res) => {
                 return res.status(500).json('Error writing notes');
             }
 
-            console.log(`Note with ID ${noteId} has been deleted`);
+            console.log(`Note with ID ${noteId} has been removed`);
             res.status(200).json({ status: 'success', note_id: noteId });
         });
     });
