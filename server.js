@@ -10,14 +10,14 @@ const app = express();
 // const PORT = 3001;
 
 //using this code instead of const PORT to see if it will help launch heroku (env = enviroment)/specific for heroku
-app.set('port', process.env.PORT || 3001);
+const PORT = process.env.PORT || 3001;
 
-app.use(express.urlencoded({ extended: true }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-app.get('/notes', (req, res) =>
+app.get('/', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 );
 
